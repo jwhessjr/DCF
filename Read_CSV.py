@@ -1,6 +1,4 @@
-import csv
+import pandas
 
-with open('FLDCF20211006.csv', newline=") as dcfinputs:
-    dcfvalues = csv.reader(dcfinputs, delimeter='', quotecharacter='|')
-    for row in dcfvalues:
-        print(','.join(row))
+df = pandas.read_csv('FLDCF20211006.csv')
+print(df)
