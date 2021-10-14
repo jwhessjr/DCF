@@ -16,8 +16,8 @@ cash_flow = pd.read_excel(file, sheet_name=3, index_col=0)
 dcf_inputs = pd.concat([inputs, bal_sheet, inc_stmnt, cash_flow])
 # print(dcf_inputs)
 # print(dcf_inputs.loc["Book Value of Equity", "Current Year"])
-book_value = (dcf_inputs.loc["Book Value of Equity", "Current Year"] +
-              dcf_inputs.loc["Book Value of Equity", "Prior Year"]) / 2
+book_value = (dcf_inputs.at["Book Value of Equity", "Current Year"] +
+              dcf_inputs.at["Book Value of Equity", "Prior Year"]) / 2
 
 print(book_value)
 
