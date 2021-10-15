@@ -27,8 +27,13 @@ net_income = dcf_inputs.at["Net Income", "Current Year"] - \
 net_income = pd.Series(data=[net_income, " "],
                        index=dcf_inputs.columns, name="Adj Net Income")
 dcf_inputs = dcf_inputs.append(net_income)
+beta = 1.1
+discount_rate = dcf_inputs["Risk Free Rate", "Current Year"] + \
+    beta * dcf_inputs["Equity Risk Premium", "Current Year"]
 
-
+discount_rate = pd.Series(
+    data=[discount_rate, " "], index=dcf_inputs.columns, name="Discount_rate")
+dcf_inputs = dcf-inputs.append(discount_rate)
 print(dcf_inputs)
 # print(book_value)
 
