@@ -19,7 +19,18 @@ dcf_inputs = pd.concat([inputs, bal_sheet, inc_stmnt, cash_flow])
 book_value = (dcf_inputs.at["Book Value of Equity", "Current Year"] +
               dcf_inputs.at["Book Value of Equity", "Prior Year"]) / 2
 
-print(book_value)
+# Calculate net income = net income - interest income
+net_income = dcf_inputs.at["Net Income", "Current Year"] - \
+    dcf_inputs.at["Interest Income", "Current Year"]
+
+# print(net_income)
+net_income = pd.Series(data=[net_income, " "],
+                       index=dcf_inputs.columns, name="Adj Net Income")
+dcf_inputs = dcf_inputs.append(net_income)
+
+
+print(dcf_inputs)
+# print(book_value)
 
 # print(dcf_inputs.loc["Current Year"])
 #print(dcf_inputs.loc["Book Value of Equity", "Current Year"])
