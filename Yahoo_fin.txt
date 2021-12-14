@@ -1,0 +1,20 @@
+## Logic to get company info and save selected data to a dictionary
+def get_data(ticker):
+    data = pd.DataFrame(yf.get_company_info(ticker))
+    return data
+
+
+ticker = 'GTN'
+data = get_data(ticker)
+# print(data)
+# print(data['Value']['sector'], data['Value']
+#       ['website'], data['Value']['industry'])
+print(data)
+
+new_data = [("Ticker", ticker), ("Sector", data['Value']
+                                 ['sector']), ("Website", data['Value']['website'])]
+
+co_dict.update(new_data)
+
+
+#  code to get valuation stats and save to a dictionary

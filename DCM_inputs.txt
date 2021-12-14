@@ -1,0 +1,55 @@
+Revenue last 2 years
+Net Income last 5 years (Normalize earnings)
+Interest Income from Cash and Marketable Securities after tax
+Book Value of Equity last 2 years
+Cash and Marketable Securities last 2 years
+Book Value of Debt current year
+Market Value of Equity current year
+Number of Shares Outstanding
+Capital Expenditures last 5 years
+EBIT last 5 years
+Current Depreciation
+Current Assets last 2 years (change in working capital calculation)
+Current Liabilities last 2 years (chankge in working capital calculation)
+Net Debt Issued (Paid) current year
+Beta of Stock 
+Risk Free Rate (10 year Treasury Bond rate) *
+Equity Risk Premium *
+Non_Cash ROE for Stable growth period
+Growth Rate for stable growth period
+Beta for stable growth period (approaches 1.0)
+Market Price per Share
+Enterprise Value
+Unlevered Beta of the Sector (Industry?)
+
+
+DCM Calculations
+Normalized Net Income = Net Income last 5 years / 5
+Normalized Net Capital Expenditures = (Net Capital Expenditures last 5 years / EBIT last 5 years) * EBIT current year
+Normalized Working Capital Change = (Total Non-Cash Working Capital current year / Revenue current year) * (Revenue current year - Revenue last year)
+Normalized Net Debt Issued = (Book Vakue of Debt current year / (Book Value of Debt current year + Book Value of Equity current year)) * (Normalized Net Capital Expenditures + Normalized Working Capital Change)
+Non-Cash ROE = Normalized Net Income / (Book Value of Equity prior year - Cash & Marketable Securities prior year)
+Equity Reinvestment Rate = (Normalized Net Capital Expenditure + Normalized Net Working Capital - Normalized Net Debt Issued) / (Net Income current year - Interest Income from Cash & Marketable Securities current year)
+Levered Beta = Unlevered Beta of the sector(1 + (1 - Tax Rate) * (Debt / Equity))
+Cost of Equity = Risk Free Rate + (Levered Beta * Equity Risk Premium)
+Growth Rate in Net Income = Non Cash Roe * Equity Reinvestment Rate
+
+
+DCF Calculations (Iterate over 5 Years)
+**Satrt with Net Income w/o interest income from cas & marketable securities for the current year
+
+For year in range(1, 6):
+Net Income(year) = Net Income (year - 1) * Expected Growth Rate
+Free Cash Flow to Equity = Net Income(year) * (1 - Equity Reinvestment Rate)
+Cumulative Cost of Equity(year) = (1 + Cost of Equity)**year
+Present Value of Free Cash Flow to Equity(year) = Net Income(year) / Cumulative Cost of Equity(year)
+Total Present Value of Free Cash Flows to Equity = Sum of Present Value of Free Cash Flows to Equity
+Terminal Equity Value = (PV of Free Cash Flow to Equity[-1] * ( 1 + Growth Rate for Stable Period) * (1 - Equity Reinvestment Rate in Stable Period)) / (Cost of Equity in Satable Period - Growth Rate in Stable Period)
+Present Value of Terminal Value = (Terminal Equity Value / Cumulative Cost of Equity[-1])
+Present Value of Equity in Operating Assets = Total Present Value of Free Cash Flows to Equity + Present Value of Terminal Value
+Present Value of Equity in Firm = Present Value of Equity in Operating Assets + Cash & Marketable Securities current year
+Present Value of Equity per share = Present Value of Equity in Firm / Number of Shares Outstanding
+Margin of Safety = Present Value of Equity per Share - Market Price per Share
+Per Cent Margin of Safety = (Present Value of Share / Market Price per share) -1
+Free Cash Flow to Equity Yield = Free Cash Flow to Equity[0] / Enterprise Value
+Value Creation = Non-Cash ROE - Cost of Equity (positive is a value creator; negative is a value destroyer)
