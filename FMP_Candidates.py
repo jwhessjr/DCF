@@ -1,10 +1,11 @@
 from numpy import NaN
-import yfinance as yf
 import pandas as pd
-import re
 from dataclasses import dataclass
 import sqlite3
 from sqlite3 import Error
+import certifi
+import json
+from urllib.request import urlopen
 
 
 @dataclass
@@ -34,7 +35,16 @@ class StockCandidates:
             momentum12 = 0
         except TypeError:
             momentum12 = 0
+        except ZeroDivisionError:
+            momentum12 = 0
         return momentum12
+
+
+def get_jsonparsed_data(url):
+    response = urlopen(url, cafile=certifi.where())
+    data = response.read().decode('utf-8')
+    return json.loads(data)
+    return data
 
 
 def create_connection(db_file):
@@ -75,36 +85,61 @@ df = pd.read_excel(
 conn = create_connection(database)
 with conn:
 
-    for company in df['Ticker'][1901:]:
-        ticker = yf.Ticker(company)
-        info = ticker.info
-        history = ticker.history(period='1y')
-        symbol = re.search(r"\<([A-Za-z0-9_]+)\>", str(ticker)).group(1)
+    for company in df['Ticker'][1501:]:
 
-        if 'sector' not in info:
+        url = ("https://financialmodelingprep.com/api/v3/financial-statement-symbol-lists?apikey=83968f6306c788e28e55925ceabc45e1")
+        co_list = get_jsonparsed_data(url)
+        if company not in co_list:
+            print(f'Company not in financial symbols list {company}')
             continue
-        if info['freeCashflow'] == NaN or info['freeCashflow'] == None:
-            print(symbol + ' ' + str(info['freeCashflow']))
+        url = (
+            f'https://financialmodelingprep.com/api/v3/ratios/{company}?apikey=83968f6306c788e28e55925ceabc45e1')
+        ratios = get_jsonparsed_data(url)
+        try:
+            if ratios[0]['priceToFreeCashFlowsRatio'] == NaN or ratios[0]['priceToFreeCashFlowsRatio'] == None:
+                print(ratios[0]['symbol'] + ' ' +
+                      str(ratios[0]['priceToFreeCashFlowsRatio']))
+                continue
+        except IndexError:
             continue
-        stock_candidate = StockCandidates(
-            symbol, info['longName'], info['sector'], info['industry'], 0.0, 0.0)
-        stock_candidate.fcf_yield = stock_candidate.calc_yield(
-            info['freeCashflow'], info['marketCap'])
+
+        url = (
+            f'https://financialmodelingprep.com/api/v3/profile/{company}?apikey=83968f6306c788e28e55925ceabc45e1')
+        profile = get_jsonparsed_data(url)
+        # if 'sector' not in profile[0]:
+        #     print('No sector in profile' + profile[0]['symbol'])
+        #     continue
+
+        url = (
+            f"https://financialmodelingprep.com/api/v3/historical-price-full/{company}?from=2020-12-01&to=2021-12-01&apikey=83968f6306c788e28e55925ceabc45e1")
+        prices = get_jsonparsed_data(url)
+
+        try:
+            stock_candidate = StockCandidates(
+                profile[0]['symbol'], profile[0]['companyName'], profile[0]['sector'], profile[0]['industry'], 0.0, 0.0)
+        except IndexError:
+            continue
+        try:
+            stock_candidate.fcf_yield = (
+                1 / ratios[0]['priceToFreeCashFlowsRatio'])
+        except ZeroDivisionError:
+            stock_candidate.fcf_yield = 0
         if stock_candidate.fcf_yield >= .0485:  # S&P 500 average FCF Yield = 4.85%
             stock_candidate.momentum_12 = stock_candidate.calc_momentum(
-                history.iloc[-1, 3], history.iloc[0, 3])
+                prices['historical'][-1]['close'], prices['historical'][0]['close'])
             if stock_candidate.momentum_12 > 1.0:  # 12 month closing price momentum is positive
                 candidate = (stock_candidate.ticker, stock_candidate.name, stock_candidate.sector,
                              stock_candidate.industry, stock_candidate.fcf_yield, stock_candidate.momentum_12)
                 print(candidate)
                 candidate = create_candidate(conn, candidate)
             else:
+                print('No MO' + '  ' + profile[0]['symbol'])
                 continue
 
         else:
             continue
 
-    # print('Not a candidate - FCF Yield')
+    print('Not a candidate - FCF Yield' + '  ' + profile[0]['symbol'])
 
 
 # with open('candidates.txt', 'a') as stocks_file:

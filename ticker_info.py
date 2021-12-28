@@ -35,14 +35,14 @@ class StockCandidates:
 
 # companies = ['akba', 'akr', 'akro', 'akts', 'akus', 'albo', 'alco', 'ale', 'alec',
 #              'alex', 'alg', 'algs', 'algt', 'allk', 'allo', 'alrm', 'alrs', 'alta', 'altg']
-companies = ['gtn', 'myrg']
+companies = ['gtn']
 # co_dict = {}
 
 for company in companies:
     ticker = yf.Ticker(company)
 
     info = ticker.info
-    for k, v in info.items():
+    for k, v in sorted(info.items()):
         print(k, v)
 #     history = ticker.history(period='1y')
 

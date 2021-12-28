@@ -27,7 +27,7 @@ DCM Calculations
 Normalized Net Income = Net Income last 5 years / 5
 Normalized Net Capital Expenditures = (Net Capital Expenditures last 5 years / EBIT last 5 years) * EBIT current year
 Normalized Working Capital Change = (Total Non-Cash Working Capital current year / Revenue current year) * (Revenue current year - Revenue last year)
-Normalized Net Debt Issued = (Book Vakue of Debt current year / (Book Value of Debt current year + Book Value of Equity current year)) * (Normalized Net Capital Expenditures + Normalized Working Capital Change)
+Normalized Net Debt Issued = (Book Value of Debt current year / (Book Value of Debt current year + Book Value of Equity current year)) * (Normalized Net Capital Expenditures + Normalized Working Capital Change)
 Non-Cash ROE = Normalized Net Income / (Book Value of Equity prior year - Cash & Marketable Securities prior year)
 Equity Reinvestment Rate = (Normalized Net Capital Expenditure + Normalized Net Working Capital - Normalized Net Debt Issued) / (Net Income current year - Interest Income from Cash & Marketable Securities current year)
 Levered Beta = Unlevered Beta of the sector(1 + (1 - Tax Rate) * (Debt / Equity))
@@ -38,13 +38,13 @@ Growth Rate in Net Income = Non Cash Roe * Equity Reinvestment Rate
 DCF Calculations (Iterate over 5 Years)
 **Satrt with Net Income w/o interest income from cas & marketable securities for the current year
 
-For year in range(1, 6):
-Net Income(year) = Net Income (year - 1) * Expected Growth Rate
+For year in range(6):
+Expected Net Income(year) = Expected Net Income (year - 1) * Expected Growth Rate
 Free Cash Flow to Equity = Net Income(year) * (1 - Equity Reinvestment Rate)
 Cumulative Cost of Equity(year) = (1 + Cost of Equity)**year
-Present Value of Free Cash Flow to Equity(year) = Net Income(year) / Cumulative Cost of Equity(year)
+Present Value of Free Cash Flow to Equity(year) = Free Csh Flow to Equity(year) / Cumulative Cost of Equity(year)
 Total Present Value of Free Cash Flows to Equity = Sum of Present Value of Free Cash Flows to Equity
-Terminal Equity Value = (PV of Free Cash Flow to Equity[-1] * ( 1 + Growth Rate for Stable Period) * (1 - Equity Reinvestment Rate in Stable Period)) / (Cost of Equity in Satable Period - Growth Rate in Stable Period)
+Terminal Equity Value = (PV of Free Cash Flow to Equity[-1] * ( 1 + Growth Rate for Stable Period) * (1 - Equity Reinvestment Rate in Stable Period)) / (Cost of Equity in Stable Period - Growth Rate in Stable Period)
 Present Value of Terminal Value = (Terminal Equity Value / Cumulative Cost of Equity[-1])
 Present Value of Equity in Operating Assets = Total Present Value of Free Cash Flows to Equity + Present Value of Terminal Value
 Present Value of Equity in Firm = Present Value of Equity in Operating Assets + Cash & Marketable Securities current year
