@@ -34,8 +34,7 @@ def get_jsonparsed_data(url):
 # Function to get the income statement and extract the required fields
 
 def get_incStmnt(company):
-    url = (
-        f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey=83968f6306c788e28e55925ceabc45e1')
+    url = (f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey=83968f6306c788e28e55925ceabc45e1')
     data = get_jsonparsed_data(url)
     incStmnt = {}
     incStmnt['netIncome'] = [data[0]['netIncome'], data[1]['netIncome'],
