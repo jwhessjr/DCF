@@ -12,7 +12,7 @@ def get_jsonparsed_data(url):
     return json.loads(data)
 
 
-url = ("https://financialmodelingprep.com/api/v3/quote-short/FL?apikey=83968f6306c788e28e55925ceabc45e1")
+url = ("https://financialmodelingprep.com/api/v3/income-statement/HRTG?limit=5&apikey=83968f6306c788e28e55925ceabc45e1")
 
 data = get_jsonparsed_data(url)
 # df = pd.json_normalize(data)

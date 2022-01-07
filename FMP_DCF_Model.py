@@ -3,24 +3,20 @@
 
 # # DCF Model Using Financial Modeling Prep Inputs
 
-# In[1]:
-
 
 # import required libraries
 
 import pandas as pd
-from dataclasses import dataclass
 import certifi
 import json
 from urllib.request import urlopen
 import sqlite3
 from sqlite3 import Error
-
-
-# In[2]:
+from datetime import datetime
 
 
 # read statements from FMP
+
 
 def get_jsonparsed_data(url):
     response = urlopen(url, cafile=certifi.where())
@@ -28,57 +24,55 @@ def get_jsonparsed_data(url):
     return json.loads(data)
 
 
-# In[3]:
-
-
 # Function to get the income statement and extract the required fields
-
 def get_incStmnt(company):
-    url = (f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey=83968f6306c788e28e55925ceabc45e1')
+    url = (
+        f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey=83968f6306c788e28e55925ceabc45e1')
     data = get_jsonparsed_data(url)
     incStmnt = {}
-    incStmnt['netIncome'] = [data[0]['netIncome'], data[1]['netIncome'],
-                             data[2]['netIncome'], data[3]['netIncome'], data[4]['netIncome']]
-    incStmnt['interestIncome'] = [data[0]['interestIncome'], data[1]['interestIncome'],
-                                  data[2]['interestIncome'], data[3]['interestIncome'], data[4]['interestIncome']]
+
+    incStmnt['netIncome'] = data[0]['netIncome'], data[1]['netIncome'],\
+        data[2]['netIncome'], data[3]['netIncome'], data[4]['netIncome']
+    incStmnt['interestIncome'] = [data[0]['interestIncome'],
+                                  data[1]['interestIncome'],
+                                  data[2]['interestIncome'],
+                                  data[3]['interestIncome'],
+                                  data[4]['interestIncome']]
 
     incStmnt['totalRevenue'] = [data[0]['revenue'], data[1]['revenue']]
     incStmnt['incomeBeforeTax'] = data[0]['incomeBeforeTax']
-    incStmnt['ebit'] = [data[0]['operatingIncome'], data[1]['operatingIncome'], data[2]
-                        ['operatingIncome'], data[3]['operatingIncome'], data[4]['operatingIncome']]
+    incStmnt['ebit'] = [data[0]['operatingIncome'],
+                        data[1]['operatingIncome'],
+                        data[2]['operatingIncome'],
+                        data[3]['operatingIncome'],
+                        data[4]['operatingIncome']]
 
     return incStmnt
 
 
-# In[4]:
-
-
 # Function to get the balance sheet and extract the required fields
-
 def get_balSht(company):
     url = (
         f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{company}?limit=2&apikey=83968f6306c788e28e55925ceabc45e1")
     data = get_jsonparsed_data(url)
     balSht = {}
-    balSht['cashAndCashEquivalents'] = [
-        data[0]['cashAndCashEquivalents'], data[1]['cashAndCashEquivalents']]
-    balSht['totalCurrentAssets'] = [
-        data[0]['totalCurrentAssets'], data[1]['totalCurrentAssets']]
-    balSht['totalCurrentLiabilities'] = [
-        data[0]['totalCurrentLiabilities'], data[1]['totalCurrentLiabilities']]
+    balSht['cashAndCashEquivalents'] = \
+        [data[0]['cashAndCashEquivalents'], data[1]['cashAndCashEquivalents']]
+    balSht['totalCurrentAssets'] = \
+        [data[0]['totalCurrentAssets'],
+         data[1]['totalCurrentAssets']]
+    balSht['totalCurrentLiabilities'] = \
+        [data[0]['totalCurrentLiabilities'], data[1]['totalCurrentLiabilities']]
     balSht['totalLiabilities'] = \
-        [data[0]['totalLiabilities'], data[1]['totalLiabilities']]
-    balSht['totalStockholdersEquity'] = [
-        data[0]['totalStockholdersEquity'], data[1]['totalStockholdersEquity']]
+        [data[0]['totalLiabilities'],
+         data[1]['totalLiabilities']]
+    balSht['totalStockholdersEquity'] = \
+        [data[0]['totalStockholdersEquity'], data[1]['totalStockholdersEquity']]
 
     return balSht
 
 
-# In[5]:
-
-
 # Function to get the cash flow statement and extract the required fields
-
 def get_cshFlw(company):
     url = (
         f"https://financialmodelingprep.com/api/v3/cash-flow-statement/{company}?limit=5&apikey=83968f6306c788e28e55925ceabc45e1")
@@ -92,6 +86,7 @@ def get_cshFlw(company):
     return cshFlw
 
 
+# Function to extract number of shares outstanding
 def get_entVal(company):
     url = (
         f"https://financialmodelingprep.com/api/v3/enterprise-values/{company}?limit=1&apikey=83968f6306c788e28e55925ceabc45e1")
@@ -99,6 +94,8 @@ def get_entVal(company):
     sharesOutstanding = data[0]['numberOfShares']
 
     return sharesOutstanding
+
+# Function to get the current share price
 
 
 def get_price(company):
@@ -109,18 +106,17 @@ def get_price(company):
 
     return price
 
-# In[6]:
-
 
 def main():
-    company = input('Input company ticker: ')
+    company = input('Input company ticker: ').upper()
+    print(company)
     eqPrem = float(input('Input equity premium rate: '))
     unleveredBeta = float(input('Input unlevered sector beta: '))
     riskFree = float(input('Input risk free rate: '))
     growthPeriod = int(input('Input growth period: '))
     stableGrowth = float(input('Input growth rate for stable period: '))
     StableEqRe = float(input('Input stable period equity reinvestment rate: '))
-    stableRoe = float(input('Input stable periiod cost of equity: '))
+    stableBeta = float(input('Input stable period beta: '))
 
     incStmnt = get_incStmnt(company)
     # print(type(incStmnt))
@@ -142,34 +138,39 @@ def main():
 
     sharesOutstanding = get_entVal(company)
     price = get_price(company)
+
     # Calculate Remaining Inputs
     # * Tax Rate - tr
     # * Debt to Equity Ratio - de
     # * Normalize Net Income - normNetInc
     # * Normalized Net Capital Expenditures - normCapex
-    # * Normalized Working Capital Change - wcc
-    # * Normalized Net Debt Issued - ndi
-    # * Non-Cash ROE - roe
-    # * Equity Reinvestment Rate - eq-re-rate
+    # * Normalized Working Capital Change - normWCC
+    # * Normalized Net Debt Issued - normDI
+    # * Non-Cash ROE - nonCshRoe
+    # * Equity Reinvestment Rate - eqReRate
     # * Levered Beta - beta
     # * Cost of Equity - coe
-    # * Net Income Growth Rate - growthNi
+    # * Net Income Growth Rate - growthNI
 
-    # tr = (income before tax - net income) / income before tax - OK
+    # Calculate effective tax rate
     tr = (incStmnt['incomeBeforeTax'] - incStmnt
           ['netIncome'][0]) / incStmnt['incomeBeforeTax']
     print(f'taxrate {tr}')
 
-    # de = Total Debt / Total Stockholders Equity -OK
+    # Calculate debt to equity ratio
     de = (balSht['totalLiabilities'][0]) / balSht['totalStockholdersEquity'][0]
     print(f'de {de}')
 
-    # normNI = net income - interest income [0] thru [4] - OK
+    # Calculate normalized net income
     totalNI = 0
     totalII = 0
-    i = range(len(incStmnt['netIncome']))
-    for x in i:
+
+    for x in range(len(incStmnt['netIncome'])):
+        print(len(incStmnt['netIncome']))
+        print(x)
+        print(incStmnt['netIncome'][x])
         totalNI += incStmnt['netIncome'][x]
+        print(incStmnt['interestIncome'][x])
         totalII = + incStmnt['interestIncome'][x]
 
     normNI = (totalNI - totalII)/len(incStmnt['netIncome'])
@@ -177,14 +178,15 @@ def main():
     print(f'Total Int Inc {totalII}')
     print(f'normNI {normNI}')
 
-    # normCapex = ((Sum of capex + depreciation) / (sum of ebit)) * -1 - OK
-
+    # Calculate normalized capital expenditures
     totalCapex = 0
     totalEbit = 0
     i = range(len(cshFlw['capex']))
     for x in i:
         totalCapex += ((cshFlw['capex'][x]*-1) - cshFlw['depreciation'][x])
+        # print(f'Totcap {totalCapex}')
         totalEbit += incStmnt['ebit'][x]
+        # print(f'TotEbit {totalEbit}')
 
     normCapex = (totalCapex / totalEbit) * incStmnt['ebit'][0]
 
@@ -193,23 +195,23 @@ def main():
     print('ebit 0 ' + str(incStmnt['ebit'][0]))
     print(f'normCapex {normCapex}')
 
-    # normWCC = ((revenue[0] - cash[0] - currentLiab[0])/revenue[0] * (revenue[0] - revenue[1]) - OK
-
-    normWCC = ((balSht['totalCurrentAssets'][0] - balSht['cashAndCashEquivalents'][0] - balSht['totalCurrentLiabilities'][0]
-                ) - (balSht['totalCurrentAssets'][1] - balSht['cashAndCashEquivalents'][1] - balSht['totalCurrentLiabilities'][1]
-                     ))
-
+    # Calculate normalized changes in working capital
+    normWCC = ((balSht['totalCurrentAssets'][0] -
+                balSht['cashAndCashEquivalents'][0] -
+                balSht['totalCurrentLiabilities'][0])
+               / incStmnt['totalRevenue'][0]) * (incStmnt['totalRevenue'][0] - incStmnt['totalRevenue'][1])
     print(f'WCC {normWCC}')
 
-    # normDi = ((totalLiabilities[0] / (totalLiabilities[0]+ totalShareholdersEquity[0]) * (normCapex + normWcc))) - OK
-
-    normDI = (balSht['totalLiabilities'][0] /
-              (balSht['totalLiabilities'][0] + balSht['totalStockholdersEquity'][0]) * (normCapex + normWCC))
+    # Calculate normalized debt issued
+    normDI = balSht['totalLiabilities'][0] / \
+        (balSht['totalLiabilities'][0] +
+         balSht['totalStockholdersEquity'][0]) * (normCapex + normWCC)
 
     print('Liabilities ' + str(balSht['totalLiabilities'][0]))
     print('Equity ' + str(balSht['totalStockholdersEquity'][0]))
     print(f'Debt Issued {normDI}')
 
+    # Calculate non cas return on equity
     nonCshRoe = normNI / \
         (balSht['totalStockholdersEquity'][1] -
          balSht['cashAndCashEquivalents'][1])
@@ -217,6 +219,7 @@ def main():
     print('Cash &' + str(balSht['cashAndCashEquivalents'][0]))
     print(f'ROE {nonCshRoe}')
 
+    # Calculate equity reinvestment rate
     eqReRate = (normCapex + normWCC - normDI) / \
         (incStmnt['netIncome'][0] - incStmnt['interestIncome'][0])
 
@@ -224,18 +227,23 @@ def main():
     print('II ' + str(incStmnt['interestIncome'][0]))
     print(f'Rein Rate {eqReRate}')
 
+    # Calculate beta
     beta = unleveredBeta * (1 + (1 - tr)) * de
     print(f'Beta {beta}')
 
-    coe = riskFree + (beta * eqPrem)
+    # Calculate cost of equity
+    coe = riskFree + beta * eqPrem
     print(f'COE {coe}')
 
+    # Calculate growth rate of net income
     growthNI = (nonCshRoe * eqReRate)
     print(f'Growth in Net Income {growthNI}')
 
+    # Calculate wealth creation % if non cash roe > coe = wealth creation
     wealthCreate = nonCshRoe - coe
     print(f'Wealth creation {wealthCreate}')
 
+    # Calculate present value of future free cash flows to equity
     totPvFcfe = 0
     expectedNI = []
     fcfe = []
@@ -254,25 +262,30 @@ def main():
 
     print(f'Total PV FCFE {totPvFcfe}')
 
+    # Calculate stable period coe
+    stableCOE = riskFree + stableBeta * eqPrem
+
     # Calculate Terminal Value
-    terminalValue = (pvFcfe[growthPeriod - 1] * (1 + stableGrowth)
-                     * (1 - StableEqRe)) / (stableRoe - stableGrowth)
+    terminalValue = (expectedNI[-1] * (1 + stableGrowth)
+                     * (1 - StableEqRe)) / (stableCOE - stableGrowth)
 
     print(f'PV Year 5 {pvFcfe[4]}')
     print(f'Terminal Value {terminalValue}')
 
-    # Total PV of Operating Assets
+    # Calculate Total PV of Operating Assets
     totalPvOpAssets = totPvFcfe + terminalValue
 
     print(f'PV of operating assets {totalPvOpAssets}')
 
-    # Total PV of Equity in Firm
+    # Calculate Total PV of Equity in Firm
     totPvEq = totalPvOpAssets + balSht['cashAndCashEquivalents'][0]
 
     print(f'Total PV of Equity {totPvEq}')
 
     # Calculate Value per share
     pvEqPerShare = totPvEq / sharesOutstanding
+
+    # Calculate the margin of safety (does the present value of the equity shares exceed the current price?)
     safetyMargin = pvEqPerShare - price
 
     print(f'Equity per share {pvEqPerShare}')
