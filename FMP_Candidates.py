@@ -87,13 +87,13 @@ with conn:
 
     for company in df['Ticker'][1501:]:
 
-        url = ("https://financialmodelingprep.com/api/v3/financial-statement-symbol-lists?apikey=83968f6306c788e28e55925ceabc45e1")
+        url = ("https://financialmodelingprep.com/api/v3/financial-statement-symbol-lists?apikey=MYAPIKEY")
         co_list = get_jsonparsed_data(url)
         if company not in co_list:
             print(f'Company not in financial symbols list {company}')
             continue
         url = (
-            f'https://financialmodelingprep.com/api/v3/ratios/{company}?apikey=83968f6306c788e28e55925ceabc45e1')
+            f'https://financialmodelingprep.com/api/v3/ratios/{company}?apikey=MYAPIKEY')
         ratios = get_jsonparsed_data(url)
         try:
             if ratios[0]['priceToFreeCashFlowsRatio'] == NaN or ratios[0]['priceToFreeCashFlowsRatio'] == None:
@@ -104,14 +104,14 @@ with conn:
             continue
 
         url = (
-            f'https://financialmodelingprep.com/api/v3/profile/{company}?apikey=83968f6306c788e28e55925ceabc45e1')
+            f'https://financialmodelingprep.com/api/v3/profile/{company}?apikey=MYAPIKEY')
         profile = get_jsonparsed_data(url)
         # if 'sector' not in profile[0]:
         #     print('No sector in profile' + profile[0]['symbol'])
         #     continue
 
         url = (
-            f"https://financialmodelingprep.com/api/v3/historical-price-full/{company}?from=2020-12-01&to=2021-12-01&apikey=83968f6306c788e28e55925ceabc45e1")
+            f"https://financialmodelingprep.com/api/v3/historical-price-full/{company}?from=2020-12-01&to=2021-12-01&apikey=MYAPIKEY")
         prices = get_jsonparsed_data(url)
 
         try:
