@@ -13,6 +13,8 @@ from urllib.request import urlopen
 import sqlite3
 from sqlite3 import Error
 from datetime import datetime
+from bs4 import BeautifulSoup
+import requests
 
 
 # read statements from FMP
@@ -107,12 +109,40 @@ def get_price(company):
     return price
 
 
+def get_riskFree():
+    url = 'https://www.cnbc.com/quotes/US10Y'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'lxml')
+    result = soup.find(class_="QuoteStrip-lastPrice")
+    riskFree = float(result.text[:-1])/100
+    # print(f'Risk Free Rate {riskFree}')
+    return riskFree
+
+
+def get_industry(company):
+    indName = pd.read_excel(
+        '/Users/jhess/Development/DCF/DCF/indname.xlsx', sheet_name='US by industry')
+    for index, row in indName.iterrows():
+        try:
+            if company in row['Exchange:Ticker']:
+                industry = row['Industry Group']
+                print(f'Industry Group {industry}')
+            else:
+                continue
+        except TypeError:
+            continue
+        except AttributeError:
+            continue
+    return industry
+
+
 def main():
     company = input('Input company ticker: ').upper()
     print(company)
-    eqPrem = float(input('Input equity premium rate: '))
-    unleveredBeta = float(input('Input unlevered sector beta: '))
-    riskFree = float(input('Input risk free rate: '))
+    EQPREM = .0490
+    industry = get_industry(company)
+    unleveredBeta = get_beta(industry)
+    riskFree = get_riskFree()
     growthPeriod = int(input('Input growth period: '))
     stableGrowth = float(input('Input growth rate for stable period: '))
     StableEqRe = float(input('Input stable period equity reinvestment rate: '))
@@ -232,7 +262,7 @@ def main():
     print(f'Beta {beta}')
 
     # Calculate cost of equity
-    coe = riskFree + beta * eqPrem
+    coe = riskFree + beta * EQPREM
     print(f'COE {coe}')
 
     # Calculate growth rate of net income
@@ -263,7 +293,7 @@ def main():
     print(f'Total PV FCFE {totPvFcfe}')
 
     # Calculate stable period coe
-    stableCOE = riskFree + stableBeta * eqPrem
+    stableCOE = riskFree + stableBeta * EQPREM
 
     # Calculate Terminal Value
     terminalValue = (expectedNI[-1] * (1 + stableGrowth)
