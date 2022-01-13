@@ -31,7 +31,7 @@ def get_jsonparsed_data(url):
 # Function to get the income statement and extract the required fields
 def get_incStmnt(company):
     url = (
-        f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey=83968f6306c788e28e55925ceabc45e1')
+        f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey=MYAPIKEY')
     data = get_jsonparsed_data(url)
     incStmnt = {}
 
@@ -57,7 +57,7 @@ def get_incStmnt(company):
 # Function to get the balance sheet and extract the required fields
 def get_balSht(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{company}?limit=2&apikey=83968f6306c788e28e55925ceabc45e1")
+        f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{company}?limit=2&apikey=MYAPIKEY")
     data = get_jsonparsed_data(url)
     balSht = {}
     balSht['cashAndCashEquivalents'] = \
@@ -79,7 +79,7 @@ def get_balSht(company):
 # Function to get the cash flow statement and extract the required fields
 def get_cshFlw(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/cash-flow-statement/{company}?limit=5&apikey=83968f6306c788e28e55925ceabc45e1")
+        f"https://financialmodelingprep.com/api/v3/cash-flow-statement/{company}?limit=5&apikey=MYAPIKEY")
     data = get_jsonparsed_data(url)
     cshFlw = {}
     cshFlw['depreciation'] = [data[0]['depreciationAndAmortization'], data[1]['depreciationAndAmortization'],
@@ -93,7 +93,7 @@ def get_cshFlw(company):
 # Function to extract number of shares outstanding
 def get_entVal(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/enterprise-values/{company}?limit=1&apikey=83968f6306c788e28e55925ceabc45e1")
+        f"https://financialmodelingprep.com/api/v3/enterprise-values/{company}?limit=1&apikey=MYAPIKEY")
     data = get_jsonparsed_data(url)
     sharesOutstanding = data[0]['numberOfShares']
 
@@ -104,7 +104,7 @@ def get_entVal(company):
 
 def get_price(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/quote-short/{company}?apikey=83968f6306c788e28e55925ceabc45e1")
+        f"https://financialmodelingprep.com/api/v3/quote-short/{company}?apikey=MYAPIKEY")
     data = get_jsonparsed_data(url)
     price = data[0]['price']
 
