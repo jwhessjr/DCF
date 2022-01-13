@@ -15,6 +15,8 @@ from sqlite3 import Error
 from datetime import datetime
 from bs4 import BeautifulSoup
 import requests
+import xlrd
+import openpyxl
 
 
 # read statements from FMP
@@ -134,6 +136,22 @@ def get_industry(company):
         except AttributeError:
             continue
     return industry
+
+
+def get_beta(industry):
+    beta = pd.read_excel(
+        '/Users/jhess/Development/DCF/DCF/betas-3.xlsx', sheet_name='Industry Averages')
+    for index, row in beta.iterrows():
+        try:
+
+            if industry in row['Industry Name']:
+                unleveredBeta = row['Unlevered beta corrected for cash']
+            else:
+                continue
+        except TypeError:
+            continue
+    print(f'Beta {unleveredBeta}')
+    return unleveredBeta
 
 
 def main():
