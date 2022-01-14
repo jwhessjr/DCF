@@ -18,6 +18,8 @@ import requests
 import xlrd
 import openpyxl
 
+MYAPIKEY = '83968f6306c788e28e55925ceabc45e1'
+
 
 # read statements from FMP
 
@@ -31,12 +33,15 @@ def get_jsonparsed_data(url):
 # Function to get the income statement and extract the required fields
 def get_incStmnt(company):
     url = (
-        f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey=MYAPIKEY')
+        f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey='+MYAPIKEY)
     data = get_jsonparsed_data(url)
     incStmnt = {}
 
-    incStmnt['netIncome'] = data[0]['netIncome'], data[1]['netIncome'],\
-        data[2]['netIncome'], data[3]['netIncome'], data[4]['netIncome']
+    incStmnt['netIncome'] = data[0]['netIncome'], \
+        data[1]['netIncome'],\
+        data[2]['netIncome'], \
+        data[3]['netIncome'], \
+        data[4]['netIncome']
     incStmnt['interestIncome'] = [data[0]['interestIncome'],
                                   data[1]['interestIncome'],
                                   data[2]['interestIncome'],
@@ -57,7 +62,7 @@ def get_incStmnt(company):
 # Function to get the balance sheet and extract the required fields
 def get_balSht(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/balance-sheet-statement/{company}?limit=2&apikey=MYAPIKEY")
+        f'https://financialmodelingprep.com/api/v3/balance-sheet-statement/{company}?limit=2&apikey='+MYAPIKEY)
     data = get_jsonparsed_data(url)
     balSht = {}
     balSht['cashAndCashEquivalents'] = \
@@ -79,7 +84,7 @@ def get_balSht(company):
 # Function to get the cash flow statement and extract the required fields
 def get_cshFlw(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/cash-flow-statement/{company}?limit=5&apikey=MYAPIKEY")
+        f'https://financialmodelingprep.com/api/v3/cash-flow-statement/{company}?limit=5&apikey='+MYAPIKEY)
     data = get_jsonparsed_data(url)
     cshFlw = {}
     cshFlw['depreciation'] = [data[0]['depreciationAndAmortization'], data[1]['depreciationAndAmortization'],
@@ -93,7 +98,7 @@ def get_cshFlw(company):
 # Function to extract number of shares outstanding
 def get_entVal(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/enterprise-values/{company}?limit=1&apikey=MYAPIKEY")
+        f'https://financialmodelingprep.com/api/v3/enterprise-values/{company}?limit=1&apikey='+MYAPIKEY)
     data = get_jsonparsed_data(url)
     sharesOutstanding = data[0]['numberOfShares']
 
@@ -104,7 +109,7 @@ def get_entVal(company):
 
 def get_price(company):
     url = (
-        f"https://financialmodelingprep.com/api/v3/quote-short/{company}?apikey=MYAPIKEY")
+        f'https://financialmodelingprep.com/api/v3/quote-short/{company}?apikey='+MYAPIKEY)
     data = get_jsonparsed_data(url)
     price = data[0]['price']
 
@@ -126,7 +131,7 @@ def get_industry(company):
         '/Users/jhess/Development/DCF/DCF/indname.xlsx', sheet_name='US by industry')
     for index, row in indName.iterrows():
         try:
-            if company in row['Exchange:Ticker']:
+            if company == row['Exchange:Ticker'].split(':')[1]:
                 industry = row['Industry Group']
                 print(f'Industry Group {industry}')
             else:
@@ -162,10 +167,8 @@ def main():
     unleveredBeta = get_beta(industry)
     riskFree = get_riskFree()
     growthPeriod = int(input('Input growth period: '))
-    stableGrowth = float(input('Input growth rate for stable period: '))
-    StableEqRe = float(input('Input stable period equity reinvestment rate: '))
-    stableBeta = float(input('Input stable period beta: '))
-
+    STABLEGROWTH = .02
+    stableBeta = unleveredBeta
     incStmnt = get_incStmnt(company)
     # print(type(incStmnt))
     # print(incStmnt)
@@ -287,6 +290,10 @@ def main():
     growthNI = (nonCshRoe * eqReRate)
     print(f'Growth in Net Income {growthNI}')
 
+    # Calculate stable equity reinvestment
+    stableEqRe = (STABLEGROWTH / growthNI) * eqReRate
+    print(f'Stable Equity Reinvestment Rate {stableEqRe}')
+
     # Calculate wealth creation % if non cash roe > coe = wealth creation
     wealthCreate = nonCshRoe - coe
     print(f'Wealth creation {wealthCreate}')
@@ -314,8 +321,8 @@ def main():
     stableCOE = riskFree + stableBeta * EQPREM
 
     # Calculate Terminal Value
-    terminalValue = (expectedNI[-1] * (1 + stableGrowth)
-                     * (1 - StableEqRe)) / (stableCOE - stableGrowth)
+    terminalValue = (expectedNI[-1] * (1 + STABLEGROWTH)
+                     * (1 - stableEqRe)) / (stableCOE - STABLEGROWTH)
 
     print(f'PV Year 5 {pvFcfe[4]}')
     print(f'Terminal Value {terminalValue}')
