@@ -131,3 +131,9 @@ dmypy.json
 # Files
 FLData.csv
 FLDCF20211006.xlsx
+testLab.py
+Project_todo.txt
+*.txt
+*.xlsx
+pandas_scraper.py
+FMP.py
