@@ -137,3 +137,4 @@ Project_todo.txt
 *.xlsx
 pandas_scraper.py
 FMP.py
+.vscode/settings.json
