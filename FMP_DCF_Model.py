@@ -12,148 +12,6 @@ import sqlite3
 from sqlite3 import Error
 from datetime import datetime
 import hg_dcflib
-# import xlrd
-# import openpyxl
-
-MYAPIKEY = '83968f6306c788e28e55925ceabc45e1'
-
-
-# # read statements from FMP
-
-
-# def get_jsonparsed_data(url):
-#     response = urlopen(url, cafile=certifi.where())
-#     data = response.read().decode('utf-8')
-#     return json.loads(data)
-
-
-# # Function to get the income statement and extract the required fields
-# def get_incStmnt(company):
-#     url = (
-#         f'https://financialmodelingprep.com/api/v3/income-statement/{company}?limit=5&apikey='+MYAPIKEY)
-#     data = get_jsonparsed_data(url)
-#     incStmnt = {}
-
-#     incStmnt['netIncome'] = data[0]['netIncome'], \
-#         data[1]['netIncome'],\
-#         data[2]['netIncome'], \
-#         data[3]['netIncome'], \
-#         data[4]['netIncome']
-#     incStmnt['interestIncome'] = [data[0]['interestIncome'],
-#                                   data[1]['interestIncome'],
-#                                   data[2]['interestIncome'],
-#                                   data[3]['interestIncome'],
-#                                   data[4]['interestIncome']]
-
-#     incStmnt['totalRevenue'] = [data[0]['revenue'], data[1]['revenue']]
-#     incStmnt['incomeBeforeTax'] = data[0]['incomeBeforeTax']
-#     incStmnt['ebit'] = [data[0]['operatingIncome'],
-#                         data[1]['operatingIncome'],
-#                         data[2]['operatingIncome'],
-#                         data[3]['operatingIncome'],
-#                         data[4]['operatingIncome']]
-
-#     return incStmnt
-
-
-# # Function to get the balance sheet and extract the required fields
-# def get_balSht(company):
-#     url = (
-#         f'https://financialmodelingprep.com/api/v3/balance-sheet-statement/{company}?limit=2&apikey='+MYAPIKEY)
-#     data = get_jsonparsed_data(url)
-#     balSht = {}
-#     balSht['cashAndCashEquivalents'] = \
-#         [data[0]['cashAndCashEquivalents'], data[1]['cashAndCashEquivalents']]
-#     balSht['totalCurrentAssets'] = \
-#         [data[0]['totalCurrentAssets'],
-#          data[1]['totalCurrentAssets']]
-#     balSht['totalCurrentLiabilities'] = \
-#         [data[0]['totalCurrentLiabilities'], data[1]['totalCurrentLiabilities']]
-#     balSht['totalLiabilities'] = \
-#         [data[0]['totalLiabilities'],
-#          data[1]['totalLiabilities']]
-#     balSht['totalStockholdersEquity'] = \
-#         [data[0]['totalStockholdersEquity'], data[1]['totalStockholdersEquity']]
-
-#     return balSht
-
-
-# # Function to get the cash flow statement and extract the required fields
-# def get_cshFlw(company):
-#     url = (
-#         f'https://financialmodelingprep.com/api/v3/cash-flow-statement/{company}?limit=5&apikey='+MYAPIKEY)
-#     data = get_jsonparsed_data(url)
-#     cshFlw = {}
-#     cshFlw['depreciation'] = [data[0]['depreciationAndAmortization'], data[1]['depreciationAndAmortization'],
-#                               data[2]['depreciationAndAmortization'], data[3]['depreciationAndAmortization'], data[4]['depreciationAndAmortization']]
-#     cshFlw['capex'] = [data[0]['capitalExpenditure'], data[1]['capitalExpenditure'], data[2]
-#                        ['capitalExpenditure'], data[3]['capitalExpenditure'], data[4]['capitalExpenditure']]
-
-#     return cshFlw
-
-
-# # Function to extract number of shares outstanding
-# def get_entVal(company):
-#     url = (
-#         f'https://financialmodelingprep.com/api/v3/enterprise-values/{company}?limit=1&apikey='+MYAPIKEY)
-#     data = get_jsonparsed_data(url)
-#     sharesOutstanding = data[0]['numberOfShares']
-
-#     return sharesOutstanding
-
-# # Function to get the current share price
-
-
-# def get_price(company):
-#     url = (
-#         f'https://financialmodelingprep.com/api/v3/quote-short/{company}?apikey='+MYAPIKEY)
-#     data = get_jsonparsed_data(url)
-#     price = data[0]['price']
-
-#     return price
-
-
-# def get_riskFree():
-#     url = 'https://www.cnbc.com/quotes/US10Y'
-#     response = requests.get(url)
-#     soup = BeautifulSoup(response.content, 'lxml')
-#     result = soup.find(class_="QuoteStrip-lastPrice")
-#     riskFree = float(result.text[:-1])/100
-#     # print(f'Risk Free Rate {riskFree}')
-#     return riskFree
-
-
-# def get_industry(company):
-#     indName = pd.read_excel(
-#         '/Users/jhess/Development/DCF/DCF/indname.xlsx', sheet_name='US by industry')
-#     for index, row in indName.iterrows():
-#         try:
-#             if company == row['Exchange:Ticker'].split(':')[1]:
-#                 industry = row['Industry Group']
-#                 print(f'Industry Group {industry}')
-#             else:
-#                 continue
-#         except TypeError:
-#             continue
-#         except AttributeError:
-#             continue
-#     return industry
-
-
-# def get_beta(industry):
-#     beta = pd.read_excel(
-#         '/Users/jhess/Development/DCF/DCF/betas-3.xlsx', sheet_name='Industry Averages')
-#     for index, row in beta.iterrows():
-#         try:
-
-#             if industry in row['Industry Name']:
-#                 unleveredBeta = row['Unlevered beta corrected for cash']
-#             else:
-#                 continue
-#         except TypeError:
-#             continue
-#     print(f'Beta {unleveredBeta}')
-#     return unleveredBeta
 
 
 def main():
@@ -164,28 +22,24 @@ def main():
     unleveredBeta = hg_dcflib.get_beta(industry)
     riskFree = hg_dcflib.get_riskFree()
     growthPeriod = int(input('Input growth period: '))
+    # long term a company can't grow faster than the economy in which it operates
     STABLEGROWTH = .02
+    # the unlevered beta for the industry in which the firm opeerates
     stableBeta = unleveredBeta
-    incStmnt = hg_dcflib.get_incStmnt(company, MYAPIKEY)
-    # print(type(incStmnt))
-    # print(incStmnt)
-    # print(incStmnt[0]['netIncome'])
+    with open('apiKey.txt') as f:
+        myApiKey = f.readline()
 
-    # print('----------------------------------------------------')
+    incStmnt = hg_dcflib.get_incStmnt(company, myApiKey)
 
-    balSht = hg_dcflib.get_balSht(company, MYAPIKEY)
-    # print(type(balSht))
-    # print(balSht)
-    # print(balSht[0]['totalCurrentLiabilities'])
-    # print('-----------------------------------------------------')
+    balSht = hg_dcflib.get_balSht(company, myApiKey)
 
-    cshFlw = hg_dcflib.get_cshFlw(company, MYAPIKEY)
-    # print(type(cshFlw))
-    # print(cshFlw)
-    # print(cshFlw[0]['depreciationAndAmortization'])
+    cshFlw = hg_dcflib.get_cshFlw(company, myApiKey)
 
-    sharesOutstanding = hg_dcflib.get_entVal(company, MYAPIKEY)
-    price = hg_dcflib.get_price(company, MYAPIKEY)
+    entVal = hg_dcflib.get_entVal(company, myApiKey)
+    sharesOutstanding = entVal[0]
+    marketCap = entVal[1]
+
+    price = hg_dcflib.get_price(company, myApiKey)
 
     # Calculate Remaining Inputs
     # * Tax Rate - tr
@@ -201,12 +55,12 @@ def main():
     # * Net Income Growth Rate - growthNI
 
     # Calculate effective tax rate
-    tr = (incStmnt['incomeBeforeTax'] - incStmnt
-          ['netIncome'][0]) / incStmnt['incomeBeforeTax']
-    print(f'taxrate {tr}')
+    # effective tr = (incStmnt['incomeTaxExpense'][0]/incStmnt['incomeBeforeTax'][0])
+    # print(f'taxrate {tr}')
+    tr = 0.21  # marginal tax rate of US firm
 
     # Calculate debt to equity ratio
-    de = (balSht['totalLiabilities'][0]) / balSht['totalStockholdersEquity'][0]
+    de = (balSht['totalLiabilities'][0]) / marketCap
     print(f'de {de}')
 
     # Calculate normalized net income
@@ -219,7 +73,7 @@ def main():
         print(incStmnt['netIncome'][x])
         totalNI += incStmnt['netIncome'][x]
         print(incStmnt['interestIncome'][x])
-        totalII = + incStmnt['interestIncome'][x]
+        totalII += incStmnt['interestIncome'][x]
 
     normNI = (totalNI - totalII)/len(incStmnt['netIncome'])
     print(f'Total NI {totalNI}')
@@ -227,33 +81,43 @@ def main():
     print(f'normNI {normNI}')
 
     # Calculate normalized capital expenditures
+    # Adjust for R&D and acquisitions
     totalCapex = 0
     totalEbit = 0
-    i = range(len(cshFlw['capex']))
-    for x in i:
-        totalCapex += ((cshFlw['capex'][x]*-1) - cshFlw['depreciation'][x])
-        # print(f'Totcap {totalCapex}')
-        totalEbit += incStmnt['ebit'][x]
-        # print(f'TotEbit {totalEbit}')
+    totalAcquisition = 0
+    for x in range(len(cshFlw['capex'])):
+        capex = (cshFlw['capex'][x]*-1)
+        print(f"Capex {capex}")
+        deprec = cshFlw['depreciation'][x]
+        print(f"Depreciatiion {deprec}")
+        acquisition = (cshFlw['acquisition'][x] * -1)
+        print(f"Acquisitions {acquisition}")
+        ebit = incStmnt['ebit'][x]
+        print(f"Ebit {ebit}")
+        totalCapex += (capex - deprec + acquisition)
+        totalEbit += ebit
 
     normCapex = (totalCapex / totalEbit) * incStmnt['ebit'][0]
 
     print(f'totalCapex {totalCapex}')
-    print(f'ebit {totalEbit}')
+    print(f'Total ebit {totalEbit}')
     print('ebit 0 ' + str(incStmnt['ebit'][0]))
     print(f'normCapex {normCapex}')
 
     # Calculate normalized changes in working capital
-    normWCC = ((balSht['totalCurrentAssets'][0] -
-                balSht['cashAndCashEquivalents'][0] -
-                balSht['totalCurrentLiabilities'][0])
-               / incStmnt['totalRevenue'][0]) * (incStmnt['totalRevenue'][0] - incStmnt['totalRevenue'][1])
-    print(f'WCC {normWCC}')
+    # Adjust for short term debt (add it back)
+    normWCC = (balSht['totalCurrentAssets'][0] -
+               balSht['cashAndCashEquivalents'][0] -
+               (balSht['totalCurrentLiabilities'][0] - balSht['shortTermDebt'][0]))\
+        - (balSht['totalCurrentAssets'][1] -
+           balSht['cashAndCashEquivalents'][1] -
+           (balSht['totalCurrentLiabilities'][1] - balSht['shortTermDebt'][1]))
+    print(f'normWCC {normWCC}')
 
     # Calculate normalized debt issued
-    normDI = balSht['totalLiabilities'][0] / \
-        (balSht['totalLiabilities'][0] +
-         balSht['totalStockholdersEquity'][0]) * (normCapex + normWCC)
+    normDI = (balSht['totalLiabilities'][0] /
+              (balSht['totalLiabilities'][0] +
+               balSht['totalStockholdersEquity'][0])) * (normCapex + normWCC)
 
     print('Liabilities ' + str(balSht['totalLiabilities'][0]))
     print('Equity ' + str(balSht['totalStockholdersEquity'][0]))
@@ -261,10 +125,11 @@ def main():
 
     # Calculate non cas return on equity
     nonCshRoe = normNI / \
-        (balSht['totalStockholdersEquity'][1] -
-         balSht['cashAndCashEquivalents'][1])
+        (((balSht['totalStockholdersEquity'][0] -
+         balSht['cashAndCashEquivalents'][0]) + (balSht['totalStockholdersEquity'][1] -
+         balSht['cashAndCashEquivalents'][1])) / 2)
 
-    print('Cash &' + str(balSht['cashAndCashEquivalents'][0]))
+    print('Cash & ' + str(balSht['cashAndCashEquivalents'][0]))
     print(f'ROE {nonCshRoe}')
 
     # Calculate equity reinvestment rate
@@ -276,11 +141,14 @@ def main():
     print(f'Rein Rate {eqReRate}')
 
     # Calculate beta
-    beta = unleveredBeta * (1 + (1 - tr)) * de
+    beta = unleveredBeta * (1 + (1 - tr) * de)
     print(f'Beta {beta}')
 
     # Calculate cost of equity
-    coe = riskFree + beta * EQPREM
+    print(f'risk free {riskFree}')
+    print(f'beta {beta}')
+    print(f'EQPREM {EQPREM}')
+    coe = riskFree + (beta * EQPREM)
     print(f'COE {coe}')
 
     # Calculate growth rate of net income
