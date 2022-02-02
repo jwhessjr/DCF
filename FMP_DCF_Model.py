@@ -136,7 +136,7 @@ def main():
 
     # Calculate equity reinvestment rate
     eqReRate = (normCapex + normWCC - normDI) / \
-        (incStmnt['netIncome'][0] - incStmnt['interestIncome'][0])
+        (incStmnt['netIncome'][0] - incStmnt['interestIncome'][0])      # or growth/ ROE if depreciation is higher than capital expenditures
 
     print('NI ' + str(incStmnt['netIncome'][0]))
     print('II ' + str(incStmnt['interestIncome'][0]))
@@ -158,10 +158,10 @@ def main():
     print(f'Growth in Net Income {growthNI}')
 
     # Calculate stable equity reinvestment
-    stableEqRe = (STABLEGROWTH / growthNI) * eqReRate
+    stableEqRe = (STABLEGROWTH / growthNI) * eqReRate  # or just stable growth / ROE+ 
     print(f'Stable Equity Reinvestment Rate {stableEqRe}')
 
-    # Calculate wealth creation % if non cash roe > coe = wealth creation
+    # Calculate wwealth creation % if non cash roe > coe = wealth creation
     wealthCreate = nonCshRoe - coe
     print(f'Wealth creation {wealthCreate}')
 
