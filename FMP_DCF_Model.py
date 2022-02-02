@@ -14,6 +14,25 @@ from datetime import datetime
 import hg_dcflib
 
 
+def main():
+    company = input('Input company ticker: ').upper()
+    print(company)
+    EQPREM = .0517          # Damodaran 20220201
+    industry = hg_dcflib.get_industry(company)
+    unleveredBeta = hg_dcflib.get_beta(industry)
+    riskFree = hg_dcflib.get_riskFree()
+    growthPeriod = int(input('Input growth period: '))
+    # long term a company can't grow faster than the economy in which it operates
+    STABLEGROWTH = .02
+    # the unlevered beta for the industry in which the firm opeerates
+    stableBeta = unleveredBeta
+    with open('apiKey.txt') as f:
+        myApiKey = f.readline()
+
+    incStmnt = hg_dcflib.get_incStmnt(company, myApiKey)
+
+    balSht = hg_dcflib.get_balSht(company, myApiKey)
+
 
 
     cshFlw = hg_dcflib.get_cshFlw(company, myApiKey)
