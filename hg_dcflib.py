@@ -78,12 +78,12 @@ def get_balSht(company, myApiKey):
         f'https://financialmodelingprep.com/api/v3/balance-sheet-statement/{company}?period=quarter&limit=8&apikey='+myApiKey)
     data = get_jsonparsed_data(url)
     balSht = {}
-    cashAndEquivalents = [data[0]['cashAndCashEquivalents'],
-                          data[4]['cashAndCashEquivalents']]
+    cashAndEquivalents = [data[0]['cashAndShortTermInvestments'],
+                          data[4]['cashAndShortTermInvestments']]
     currentAssets = [data[0]['totalCurrentAssets'],
                      data[4]['totalCurrentAssets']]
-    currentLiabilities = [
-        data[0]['totalCurrentLiabilities'], data[4]['totalCurrentLiabilities']]
+    accountsPayable = [
+        data[0]['accountPayables'], data[4]['accountPayables']]
     stockholdersEquity = [
         data[0]['totalStockholdersEquity'], data[4]['totalStockholdersEquity']]
     liabilities = [data[0]['totalLiabilities'], data[4]['totalLiabilities']]
@@ -91,7 +91,7 @@ def get_balSht(company, myApiKey):
 
     balSht['cashAndCashEquivalents'] = cashAndEquivalents
     balSht['totalCurrentAssets'] = currentAssets
-    balSht['totalCurrentLiabilities'] = currentLiabilities
+    balSht['accountsPayable'] = accountsPayable
     balSht['totalLiabilities'] = liabilities
     balSht['shortTermDebt'] = shortTermDebt
     balSht['totalStockholdersEquity'] = stockholdersEquity
@@ -195,7 +195,7 @@ def get_beta(industry):
         try:
 
             if industry in row['Industry Name']:
-                unleveredBeta = row['Unlevered beta corrected for cash']
+                unleveredBeta = row['Unlevered beta']
             else:
                 continue
         except TypeError:
