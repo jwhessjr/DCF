@@ -62,7 +62,7 @@ def main():
     tr = 0.21  # marginal tax rate of US firm
 
     # Calculate debt to equity ratio
-    de = (balSht['totalLiabilities'][0]) / marketCap
+    de = (balSht['totalLiabilities'][0]) / balSht['totalStockholdersEquity'][0]
     print(f'de {de}')
 
     # Calculate normalized net income
@@ -98,22 +98,29 @@ def main():
         print(f"Ebit {ebit}")
         totalCapex += (capex - deprec + acquisition)
         totalEbit += ebit
+        avgCapex = totalCapex / len(cshFlw['capex'])
+        avgEbit = totalEbit / len(incStmnt['ebit'])
+        capexToEbit = avgCapex / avgEbit
 
-    normCapex = (totalCapex / totalEbit) * incStmnt['ebit'][0]
+    normCapex = capexToEbit * incStmnt['ebit'][0]
 
     print(f'totalCapex {totalCapex}')
+    print(f'Avg Capex {avgCapex}')
     print(f'Total ebit {totalEbit}')
+    print(f'Avg Ebit {avgEbit}')
+    print(f'Capex to Ebit {capexToEbit}')
     print('ebit 0 ' + str(incStmnt['ebit'][0]))
     print(f'normCapex {normCapex}')
 
     # Calculate normalized changes in working capital
     # Adjust for short term debt (add it back)
-    normWCC = (balSht['totalCurrentAssets'][0] -
-               balSht['cashAndCashEquivalents'][0] -
-               (balSht['totalCurrentLiabilities'][0] - balSht['shortTermDebt'][0]))\
-        - (balSht['totalCurrentAssets'][1] -
-           balSht['cashAndCashEquivalents'][1] -
-           (balSht['totalCurrentLiabilities'][1] - balSht['shortTermDebt'][1]))
+    
+    normWCC = ((balSht['totalCurrentAssets'][0] - balSht['cashAndCashEquivalents'][0] - balSht['accountsPayable'][0]) / incStmnt['totalRevenue'][0]) * (incStmnt['totalRevenue'][0] - incStmnt['totalRevenue'][1])
+    print(f"Current Assets {balSht['totalCurrentAssets'][0]}")
+    print(f"Cash & Equiv  {balSht['cashAndCashEquivalents'][0]}")
+    print(f"A/P {balSht['accountsPayable'][0]}")
+    print(f"Revenue CY {incStmnt['totalRevenue'][0]}")
+    print(f"Revenue PY {incStmnt['totalRevenue'][1]}")
     print(f'normWCC {normWCC}')
 
     # Calculate normalized debt issued
@@ -127,11 +134,9 @@ def main():
 
     # Calculate non cas return on equity
     nonCshRoe = normNI / \
-        (((balSht['totalStockholdersEquity'][0] -
-         balSht['cashAndCashEquivalents'][0]) + (balSht['totalStockholdersEquity'][1] -
-         balSht['cashAndCashEquivalents'][1])) / 2)
+         ((balSht['totalStockholdersEquity'][1] - balSht['cashAndCashEquivalents'][1]))
 
-    print('Cash & ' + str(balSht['cashAndCashEquivalents'][0]))
+    # print('Cash & ' + str(balSht['cashAndCashEquivalents'][0]))
     print(f'ROE {nonCshRoe}')
 
     # Calculate equity reinvestment rate
@@ -143,7 +148,8 @@ def main():
     print(f'Rein Rate {eqReRate}')
 
     # Calculate beta
-    beta = unleveredBeta * (1 + (1 - tr) * de)
+    # beta = unleveredBeta * (1 + (1 - tr) * de)
+    beta = unleveredBeta
     print(f'Beta {beta}')
 
     # Calculate cost of equity
@@ -158,7 +164,8 @@ def main():
     print(f'Growth in Net Income {growthNI}')
 
     # Calculate stable equity reinvestment
-    stableEqRe = (STABLEGROWTH / growthNI) * eqReRate  # or just stable growth / ROE+ 
+    # stableEqRe = (STABLEGROWTH / growthNI) * eqReRate  # or just stable growth / ROE+ 
+    stableEqRe = STABLEGROWTH / nonCshRoe
     print(f'Stable Equity Reinvestment Rate {stableEqRe}')
 
     # Calculate wwealth creation % if non cash roe > coe = wealth creation
@@ -186,13 +193,21 @@ def main():
 
     # Calculate stable period coe
     stableCOE = riskFree + stableBeta * EQPREM
+    print(f'Stable COE {stableCOE}')
 
     # Calculate Terminal Value
-    terminalValue = (expectedNI[-1] * (1 + STABLEGROWTH)
-                     * (1 - stableEqRe)) / (stableCOE - STABLEGROWTH)
+    print(f'expected NI {expectedNI[-1]}')
+    print(f"1 + stable growth {1+STABLEGROWTH}")
+    print(f'1 - stabel Eq Rein {1 - stableEqRe}')
+    print(f'Stable COE {stableCOE}')
+    print(f"Stable Growth {STABLEGROWTH}")
 
-    print(f'PV Year 5 {pvFcfe[4]}')
+    terminalPrice = (expectedNI[-1] * (1 + STABLEGROWTH)
+                     * (1 - stableEqRe)) / (stableCOE - STABLEGROWTH)
+    terminalValue = terminalPrice / ((1 + coe)**(len(expectedNI) + 1))
+    print(f'Terminal Price {terminalPrice}')
     print(f'Terminal Value {terminalValue}')
+    print(f'Terminal Discount Rate {(1 + coe)**(len(expectedNI) + 1)}')
 
     # Calculate Total PV of Operating Assets
     totalPvOpAssets = totPvFcfe + terminalValue
@@ -203,6 +218,7 @@ def main():
     totPvEq = totalPvOpAssets + balSht['cashAndCashEquivalents'][0]
 
     print(f'Total PV of Equity {totPvEq}')
+    print(f'Shares Outstanding {sharesOutstanding}')
 
     # Calculate Value per share
     pvEqPerShare = totPvEq / sharesOutstanding
