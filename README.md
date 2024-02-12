@@ -8,7 +8,7 @@ Financial statements sourced from Financial Modeling Prep
 ## 20211008 - 
 set up virtual environment for DCF project (ignore venv)
 
-20240212
+## 20240212
 
 Over time using Financial Modeling Prep data I found elements that FMP did not have.  I inquired as to whether or not they intended to add these items.  They answered that future versions of their data would contain these items.
 
